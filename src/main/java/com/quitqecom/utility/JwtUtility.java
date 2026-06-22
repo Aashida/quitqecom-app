@@ -3,8 +3,10 @@ package com.quitqecom.utility;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -19,8 +21,14 @@ import io.jsonwebtoken.security.Keys;
 @NoArgsConstructor
 public class JwtUtility { //why  jwt ??? Create(Encryption) and Validate (Decryption)
 
-    private String SECRET_KEY="hsdjfghsdjfh348534857348jsdhjsdhfjsdgh8478457hdgjfh478";
-    SecretKey secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
+    @Value("${jwt.secret}")
+    private String key;
+    SecretKey secretKey;
+
+    @PostConstruct // This delays the initialization of SecretKey until Spring reads properties file
+    public void init(){
+        secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(key));
+    }
 
     /* Sir's explanation
      * This class does following things
@@ -42,7 +50,7 @@ public class JwtUtility { //why  jwt ??? Create(Encryption) and Validate (Decryp
                 .claims(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1 * 60 * 60 * 24 * 1000))
+                .expiration(new Date(System.currentTimeMillis() + 2 * 60 * 60 * 24 * 1000))
                 .signWith(secretKey,Jwts.SIG.HS256 )
                 .compact();
     }
